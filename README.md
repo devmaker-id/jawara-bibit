@@ -45,9 +45,11 @@ jika anda kecocokan dalam OLT yang digunakan, jangan ragukan lagi, app ini pasti
 ## aksess awal default
 
 untuk aksess api key default
-username : admin
-password : admin123
-api_key : d643b321fe51c359d6b1d045407a2de2916d1c9db0f0c2c8f43c59d5c0b1558a
+```
+username  : admin
+password  : admin123
+api_key   : d643b321fe51c359d6b1d045407a2de2916d1c9db0f0c2c8f43c59d5c0b1558a
+```
 
 ## url /auth (jalankan saat debug saja)
 ```
@@ -127,9 +129,36 @@ CREATE TABLE `tbl_users` (
 ```
 
 ## update 26 Maret 2025
+- configurasi .env update
 - menambah axios module
 - menambah telegram bot
 - format tanggal waktu
+
+## env.example -> .env
+```
+#set time zone
+TZ=Asia/Jakarta
+
+#database
+DB_HOST=
+DB_USER=
+DB_PASS=
+DB_NAME=db_isp
+DB_PORT=3306
+
+#telnet
+OLT_HOST=
+OLT_PORT=23
+OLT_USER=
+OLT_PASS=
+OLT_ENCOD=ascii
+
+# Telegram Bot Data
+TELEGRAM_BOT_TOKEN=
+DOMAIN=https://0653-140-213-30-156.ngrok-free.app
+
+```
+## folder map
 ```
 jawara-bibit
 |-src/
