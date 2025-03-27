@@ -7,7 +7,7 @@ Jawara Bibit adalah aplikasi berbasis Node.js yang digunakan untuk mengelola dat
 1. termux         -> buat jalankan nodjs
 2. api client     -> app android, rest api
 3. acode          -> app android, coding
-4. ngrox          -> run in termux, debug tele
+4. ngrok          -> run in termux, debug tele
 ```
 
 ## Fitur
