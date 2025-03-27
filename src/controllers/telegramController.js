@@ -55,7 +55,13 @@ class TelegramController {
     } else if (activeRegistrations[chatId]) {
       return await TelegramController.handleRegistrationStep(chatId, text);
     } else {
-      await TelegramBot.sendMessage(chatId, "❌ Perintah tidak dikenali. Coba `/info` atau `/i <nomor_internet>`.");
+      let chatListComm = "❌ Perintah tidak dikenali. \n";
+      chatListComm += "`/info` -> info id tele\n";
+      chatListComm += "`/i <nomor_internet>` -> cek onu pelanggan\n";
+      chatListComm += "`/daftar` -> pendaftaran pelanggan\n";
+      chatListComm += "`/batal` -> Batal Daftar\n\n";
+      chatListComm += "sys Jawara Bibit";
+      await TelegramBot.sendMessage(chatId, chatListComm);
     }
   }
   
@@ -213,74 +219,96 @@ class TelegramController {
   }
 
   static async startRegistration(chatId) {
-    activeRegistrations[chatId] = { step: 1, data: {} };
+    activeRegistrations[chatId] = {
+      step: 1,
+      data: {}
+    };
     await TelegramBot.sendMessage(chatId, "📝 Masukkan nama pelanggan:");
   }
   
   static async handleRegistrationStep(chatId, text) {
     const session = activeRegistrations[chatId];
-    
-    console.log("SESSION:\n", JSON.stringify(activeRegistrations, null, 2)); // Log sesi
-  
     if (!session) return;
+    const paketOptions = {
+        1: "5 Mbps - 175.000/bulan",
+        2: "10 Mbps - 220.000/bulan",
+        3: "20 Mbps - 350.000/bulan",
+        4: "30 Mbps - 450.000/bulan"
+    };
 
     if (session.confirmationStep) {
-        if (text.toLowerCase() === "tidak") {
-            session.step--;
-            session.confirmationStep = false;
-            await TelegramController.askNextQuestion(chatId, session.step, true);
-        } else if (text.toLowerCase() === "ya") {
-            session.confirmationStep = false;
-            session.step++;
-            await TelegramController.askNextQuestion(chatId, session.step);
+      if (text.toLowerCase() === "tidak") {
+        session.confirmationStep = false;
+        await TelegramController.askNextQuestion(chatId, session.step, true);
+      } else if (text.toLowerCase() === "ya") {
+        session.confirmationStep = false;
+        session.step++;
+        if (session.step > 3) {
+          await TelegramController.submitRegistration(chatId, session.data);
+          delete activeRegistrations[chatId];
         } else {
-            await TelegramBot.sendMessage(chatId, "❌ Jawaban tidak valid. Ketik *ya* untuk lanjut atau *tidak* untuk mengulang.");
+          await TelegramController.askNextQuestion(chatId, session.step);
         }
-        return;
+      } else {
+        await TelegramBot.sendMessage(chatId, "❌ Jawaban tidak valid. Ketik *ya* untuk lanjut atau *tidak* untuk mengulang.");
+      }
+      return;
     }
 
     switch (session.step) {
-        case 1:
-            session.data.nama = text;
-            session.confirmationStep = true;
-            await TelegramBot.sendMessage(chatId, `📍 Nama pelanggan: *${text}*\nApakah sudah benar? (Ketik *ya* atau *tidak*)`);
-            break;
+      case 1:
+        session.data.nama = text;
+        break;
 
-        case 2:
-            session.data.lokasi = text;
-            session.confirmationStep = true;
-            await TelegramBot.sendMessage(chatId, `📍 Lokasi pelanggan: *${text}*\nApakah sudah benar? (Ketik *ya* atau *tidak*)`);
-            break;
+      case 2:
+        session.data.lokasi = text;
+        break;
 
-        case 3:
-            session.data.paket = text;
-            session.confirmationStep = true;
-            await TelegramBot.sendMessage(chatId, `🔗 Paket pelanggan: *${text}*\nApakah sudah benar? (Ketik *ya* atau *tidak*)`);
-            break;
+      case 3:
+        const paketNumber = parseInt(text);
+        if (paketOptions[paketNumber]) {
+          session.data.paket = paketOptions[paketNumber];
+        } else {
+          await TelegramBot.sendMessage(chatId, "❌ Paket tidak valid. Pilih nomor 1-4 sesuai daftar paket.");
+          return;
+        }
+        break;
 
-        case 4:
-            await TelegramController.submitRegistration(chatId, session.data);
-            delete activeRegistrations[chatId]; // Hapus sesi hanya jika registrasi selesai
-            break;
+      default:
+        await TelegramBot.sendMessage(chatId, "❌ Terjadi kesalahan. Silakan mulai ulang pendaftaran.");
+        delete activeRegistrations[chatId];
+        return;
     }
+
+    session.confirmationStep = true;
+    await TelegramBot.sendMessage(chatId, `✅ ${Object.keys(session.data)[session.step - 1]}: *${text}*\nApakah sudah benar? (Ketik *ya* atau *tidak*)`);
   }
 
   static async askNextQuestion(chatId, step, isRetry = false) {
+    let paketList = "🔗 Masukkan paket pelanggan:\n";
+    paketList += "1. 5 Mbps - 175.000/bulan\n";
+    paketList += "2. 10 Mbps - 220.000/bulan\n";
+    paketList += "3. 20 Mbps - 350.000/bulan\n";
+    paketList += "4. 30 Mbps - 450.000/bulan\n";
+  
     const questions = {
-        1: "📍 Masukkan nama pelanggan:",
-        2: "📍 Masukkan lokasi pelanggan:",
-        3: "🔗 Masukkan paket pelanggan:"
+      1: "📍 Masukkan nama pelanggan:",
+      2: "📍 Masukkan lokasi pelanggan:",
+      3: paketList + "\nKetik angka paket yang diinginkan (1-4):"
     };
 
     if (questions[step]) {
-        const message = isRetry ? `🔄 Silakan masukkan ulang ${questions[step].split("Masukkan ")[1]}` : questions[step];
-        await TelegramBot.sendMessage(chatId, message);
+      const message = isRetry ? `🔄 Silakan masukkan ulang ${questions[step].split("Masukkan ")[1]}` : questions[step];
+      await TelegramBot.sendMessage(chatId, message);
+    } else {
+      await TelegramBot.sendMessage(chatId, "❌ Tidak ada pertanyaan untuk step ini.");
     }
   }
 
+
   static async submitRegistration(chatId, data) {
-    console.log('Registrasi: \n', data);
-    await TelegramBot.sendMessage(chatId, "🚨 Data Sementara, Cek terminal NodJS!");
+    const message = `✅ *Pendaftaran Berhasil!*\n\n📍 *Nama:* ${data.nama}\n📍 *Lokasi:* ${data.lokasi}\n🔗 *Paket:* ${data.paket}\n\nTerima kasih telah mendaftar! 🎉`;
+    await TelegramBot.sendMessage(chatId, message);
   }
 
   static async cancelRegistration(chatId) {

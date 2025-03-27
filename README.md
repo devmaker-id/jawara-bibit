@@ -2,6 +2,14 @@
 
 Jawara Bibit adalah aplikasi berbasis Node.js yang digunakan untuk mengelola data ONU dan melakukan pengecekan status ONU melalui OLT. Aplikasi ini menggunakan database MariaDB dan memiliki sistem autentikasi berbasis API Key.
 
+## bahan pendukung
+```
+1. termux         -> buat jalankan nodjs
+2. api client     -> app android, rest api
+3. acode          -> app android, coding
+4. ngrox          -> run in termux, debug tele
+```
+
 ## Fitur
 
 - **Manajemen Data ONU**: Menyimpan informasi ONU, termasuk nomor internet, lokasi, EPON port, dan statusnya.
@@ -172,4 +180,17 @@ jawara-bibit
 /set-webhook    -> POST   -> [url_web] butuh x-api-key
 /info-webhook   -> GET    -> butuh x-api-key
 /delete-webhook -> DELETE -> butuh x-api-key
+```
+
+## UPDATE 28/03/2025
+```
+1. Memperbaiki dialog pendaftaran
+perintah telegram /daftar
+
+2. menampilkan perintah Bot
+a. /i <no_internet>     -> cek detail onu, pelanggan
+b. /info                -> info id tele, dan username
+c. /daftar              -> masuk dialog daftar
+d. /batal               -> batalkan pendaftaran
+kasus ini masih jauh dari sempurna
 ```
