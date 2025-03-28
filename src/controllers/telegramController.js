@@ -1,7 +1,9 @@
 const axios = require("axios");
 const { formatDate } = require("../utils/dateHelper");
+const { generateNomorInternet } = require('../utils/ispHelper');
 const TelegramBot = require("../utils/telegramBot");
 const OnuModel = require("../models/onuModel");
+const PaketModels = require("../models/paketModel");
 const activeRegistrations = {};
 
 class TelegramController {
@@ -40,24 +42,41 @@ class TelegramController {
           await TelegramBot.sendMessage(chatId, `🔍 Mencari data ${nomorInternet} ...`);
           return await TelegramController.sendRouterInfo(chatId, nomorInternet);
         } else {
-          await TelegramBot.sendMessage(chatId, "❌ Format salah. Gunakan `/i <nomor_internet>`. Contoh: `/i 971000213`.");
+          await TelegramBot.sendMessage(chatId, "❌ Format salah. Gunakan\n`/i <nomor_internet>`. \nContoh: `/i 971000213`.");
         }
       } else {
-        await TelegramBot.sendMessage(chatId, "❌ Masukkan nomor internet. Contoh: `/i 971000213`.");
+        await TelegramBot.sendMessage(chatId, "❌ Masukkan nomor internet. \nContoh: `/i 971000213`.");
       }
     } else if (command === "/info") {
-      const userInfo = `👤 Info Pengguna:\nNama: ${chatId}\nID Chat: ${chatId}`;
+      let userInfo = `👤 Info Id Telegram\n`;
+      userInfo += `ID Chat: ${chatId}`;
+      
       await TelegramBot.sendMessage(chatId, userInfo);
+    } else if (command === "/paket") {
+      return await TelegramController.infoPaketWifi(chatId);
     } else if (command === "/daftar") {
       return await TelegramController.startRegistration(chatId);
     } else if (command === "/batal") {
       return await TelegramController.cancelRegistration(chatId);
+    } else if (command === "/auth") {
+      if (commandParts.length > 1) {
+        const nomorInternet = commandParts[1];
+        if (/^\d+$/.test(nomorInternet)) {
+          await TelegramBot.sendMessage(chatId, `Tunggu\nProsess aktifasi ${nomorInternet} ...`);
+        } else {
+          await TelegramBot.sendMessage(chatId, "❌ Format salah. Gunakan\n`/auth <nomor_internet>`. \nContoh: `/auth 971000213`.");
+        }
+      } else {
+        await TelegramBot.sendMessage(chatId, "❌ Aktifasi Modem. \nContoh: `/auth 971000213`.");
+      }
     } else if (activeRegistrations[chatId]) {
       return await TelegramController.handleRegistrationStep(chatId, text);
     } else {
-      let chatListComm = "❌ Perintah tidak dikenali. \n";
-      chatListComm += "`/info` -> info id tele\n";
+      let chatListComm = "Bot Jawara Bibit. \n";
+      chatListComm += "`/info` -> info id telegram\n";
+      chatListComm += "`/paket` -> list paket wifi\n";
       chatListComm += "`/i <nomor_internet>` -> cek onu pelanggan\n";
+      chatListComm += "`/auth <nomor_internet>` -> aktifasi router\n";
       chatListComm += "`/daftar` -> pendaftaran pelanggan\n";
       chatListComm += "`/batal` -> Batal Daftar\n\n";
       chatListComm += "sys Jawara Bibit";
@@ -229,12 +248,16 @@ class TelegramController {
   static async handleRegistrationStep(chatId, text) {
     const session = activeRegistrations[chatId];
     if (!session) return;
-    const paketOptions = {
-        1: "5 Mbps - 175.000/bulan",
-        2: "10 Mbps - 220.000/bulan",
-        3: "20 Mbps - 350.000/bulan",
-        4: "30 Mbps - 450.000/bulan"
-    };
+    const paketData = await PaketModels.getAll();
+    const paketOptions = {};
+    if(paketData) {
+      // Membentuk objek paketOptions
+      paketData.forEach((paket, index) => {
+        paketOptions[index + 1] = `${paket.speed} - Rp ${paket.harga.toLocaleString("id-ID")}/bulan`;
+      });
+    } else {
+      await TelegramController.cancelRegistration(chatId);
+    }
 
     if (session.confirmationStep) {
       if (text.toLowerCase() === "tidak") {
@@ -243,8 +266,9 @@ class TelegramController {
       } else if (text.toLowerCase() === "ya") {
         session.confirmationStep = false;
         session.step++;
-        if (session.step > 3) {
-          await TelegramController.submitRegistration(chatId, session.data);
+        if (session.step > 6) {
+          console.log('SESSION: \n', session);
+          await TelegramController.submitRegistration(chatId, session);
           delete activeRegistrations[chatId];
         } else {
           await TelegramController.askNextQuestion(chatId, session.step);
@@ -257,14 +281,28 @@ class TelegramController {
 
     switch (session.step) {
       case 1:
+        const no_inet = generateNomorInternet();
+        session.no_internet = no_inet;
         session.data.nama = text;
         break;
 
       case 2:
+        session.data.telepon = text;
+        break;
+      
+      case 3:
+        session.data.email = text;
+        break;
+      
+      case 4:
         session.data.lokasi = text;
         break;
-
-      case 3:
+      
+      case 5:
+        session.data.alamat = text;
+        break;
+      
+      case 6:
         const paketNumber = parseInt(text);
         if (paketOptions[paketNumber]) {
           session.data.paket = paketOptions[paketNumber];
@@ -273,6 +311,7 @@ class TelegramController {
           return;
         }
         break;
+
 
       default:
         await TelegramBot.sendMessage(chatId, "❌ Terjadi kesalahan. Silakan mulai ulang pendaftaran.");
@@ -285,16 +324,28 @@ class TelegramController {
   }
 
   static async askNextQuestion(chatId, step, isRetry = false) {
-    let paketList = "🔗 Masukkan paket pelanggan:\n";
-    paketList += "1. 5 Mbps - 175.000/bulan\n";
-    paketList += "2. 10 Mbps - 220.000/bulan\n";
-    paketList += "3. 20 Mbps - 350.000/bulan\n";
-    paketList += "4. 30 Mbps - 450.000/bulan\n";
+    
+    const paketData = await PaketModels.getAll();
+    let paketList = "";
+    if(paketData) {
+      paketList = "Masukkan paket pelanggan:\n";
+      paketData.forEach((paket, index) => {
+        paketList += `${index + 1}. ${paket.speed} - Rp ${paket.harga.toLocaleString("id-ID")}/bulan\n`;
+      });
+      paketList += "\nKetik nomor paket yang diinginkan:";
+    } else {
+      paketList += "Tidak ditemukan daftar paket\n";
+      paketList += "/batal, batalkan pendaftaran\n";
+      paketList += "hubungi tim support, untuk bantuan";
+    }
   
     const questions = {
-      1: "📍 Masukkan nama pelanggan:",
-      2: "📍 Masukkan lokasi pelanggan:",
-      3: paketList + "\nKetik angka paket yang diinginkan (1-4):"
+      1: "Masukkan nama pelanggan:",
+      2: "Masukkan telepon pelanggan:",
+      3: "Masukkan e-mail pelanggan:",
+      4: "Masukkan pin google map pelanggan:",
+      5: "Masukkan alamat lengkap pelanggan:",
+      6: paketList
     };
 
     if (questions[step]) {
@@ -305,10 +356,41 @@ class TelegramController {
     }
   }
 
-
-  static async submitRegistration(chatId, data) {
-    const message = `✅ *Pendaftaran Berhasil!*\n\n📍 *Nama:* ${data.nama}\n📍 *Lokasi:* ${data.lokasi}\n🔗 *Paket:* ${data.paket}\n\nTerima kasih telah mendaftar! 🎉`;
-    await TelegramBot.sendMessage(chatId, message);
+  static async submitRegistration(chatId, session) {
+    const data = session.data;
+    const dataBaru = {
+      no_internet: session.no_internet,
+      nama: data.nama,
+      lokasi: data.lokasi,
+      epon_port: "0/0",
+      onu_id: "0",
+      onu_mac: "FF:EE:DD:CC:BB:AA",
+      status: "unverifed",
+      telepon: data.telepon,
+      email: data.email,
+      paket: data.paket,
+      alamat_lengkap: data.alamat,
+    };
+    
+    try {
+      //const result = await OnuModels.tambahOnu(dataBaru);
+      console.log("Data ONU:\n", dataBaru);
+      
+      let message = `✅ *Pendaftaran Berhasil!*\n\n`;
+      message += `*No Inet:* \`${dataBaru.no_internet}\`\n`;
+      message += `*Nama:* ${dataBaru.nama}\n`;
+      message += `*Telepon:* ${dataBaru.telepon}\n`;
+      message += `*Email:* ${dataBaru.email}\n`;
+      message += `*Paket:* ${dataBaru.paket}\n`;
+      message += `*Alamat:* ${dataBaru.alamat_lengkap}\n`;
+      message += `*Google map:* ${dataBaru.lokasi}\n\n`;
+      message += `Terima kasih telah mendaftar! 🎉\n`;
+      message += `Segera lakukan aktifasi router`;
+      
+      await TelegramBot.sendMessage(chatId, message);
+    } catch (error) {
+      console.error("Gagal menambah data ONU:", error);
+    }
   }
 
   static async cancelRegistration(chatId) {
@@ -319,7 +401,29 @@ class TelegramController {
       await TelegramBot.sendMessage(chatId, "⚠️ Tidak ada pendaftaran yang sedang berlangsung.");
     }
   }
-    
+  
+  static async infoPaketWifi(chatId) {
+    const paketData = await PaketModels.getAll();
+    if(paketData) {
+      
+      // Membuat format string daftar paket
+      let paketList = "Masukkan paket pelanggan:\n";
+      paketData.forEach((paket, index) => {
+        paketList += `${index + 1}. ${paket.speed} - Rp ${paket.harga.toLocaleString("id-ID")}/bulan\n`;
+      });
+      
+      const paketOptions = {};
+      paketData.forEach((paket, index) => {
+        paketOptions[index + 1] = `${paket.speed} - Rp ${paket.harga.toLocaleString("id-ID")}/bulan`;
+      });
+      
+      console.log(paketOptions)
+      await TelegramBot.sendMessage(chatId, paketList);
+    } else {
+      await TelegramBot.sendMessage(chatId, "❌ paket list ga ada.");
+    }
+  }
+
 }
 
 module.exports = TelegramController;
