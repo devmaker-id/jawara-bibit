@@ -1,7 +1,6 @@
 const db = require("../config/db");
 
 class PaketModels {
-  
   static async getAll() {
     try {
       const [rows] = await db.execute("SELECT * FROM tbl_paket");
@@ -11,7 +10,6 @@ class PaketModels {
       throw error;
     }
   }
-  
 }
 
 module.exports = PaketModels;

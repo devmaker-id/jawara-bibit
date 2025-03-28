@@ -20,7 +20,7 @@ class OnuController {
       if (!inet) {
         return res.json({
           success: false,
-          data: "Nomor Internet diperlukan"
+          data: "Nomor Internet diperlukan",
         });
       }
 
@@ -29,7 +29,18 @@ class OnuController {
       if (!onu) {
         return res.json({
           success: false,
-          data: "Data ONU tidak ditemukan"
+          data: "Data ONU tidak ditemukan",
+        });
+      }
+
+      if (onu.status === "unverifed") {
+        return res.json({
+          success: true,
+          no_auth: true,
+          data: {
+            ...onu,
+            message: "ROUTER INI BELUM DI AKTIFASI DENGAN PELANGGAN",
+          },
         });
       }
 

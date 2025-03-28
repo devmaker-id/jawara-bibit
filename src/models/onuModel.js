@@ -10,7 +10,7 @@ class OnuModels {
       throw error;
     }
   }
-  
+
   static async getByNoInternet(noInternet) {
     try {
       const [rows] = await db.execute(
@@ -23,7 +23,7 @@ class OnuModels {
       throw error;
     }
   }
-  
+
   static async tambahOnu(data) {
     const sql = `
       INSERT INTO tbl_onu 
@@ -31,19 +31,29 @@ class OnuModels {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
 
+    console.log("MODEL :\n", data);
+
     try {
       const [result] = await db.execute(sql, [
-        data.no_internet, data.nama, data.lokasi, data.epon_port,
-        data.onu_id, data.onu_mac, data.status, data.telepon,
-        data.email, data.paket, data.alamat_lengkap
+        data.no_internet,
+        data.nama,
+        data.lokasi,
+        data.epon_port,
+        data.onu_id,
+        data.onu_mac,
+        data.status,
+        data.telepon,
+        data.email,
+        data.paket,
+        data.alamat_lengkap,
       ]);
+      console.log("INPUT DB:\n", result);
       return result;
     } catch (error) {
       console.error("Error saat menambah ONU:", error);
       throw error;
     }
   }
-
 }
 
 module.exports = OnuModels;
