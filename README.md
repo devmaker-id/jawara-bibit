@@ -233,6 +233,7 @@ jawara-bibit@root# nano nodejs_log.sh
 while read log; do
     curl -X POST "http://localhost:5000/api/olt/log" \
         -H "Content-Type: application/json" \
+        -H "x-api-key: d643b321fe51c359d6b1d045407a2de2916d1c9db0f0c2c8f43c59d5c0b1558a" \
         -d "{\"log\": \"$log\"}"
 done
 
