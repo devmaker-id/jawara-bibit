@@ -553,7 +553,8 @@ class TelegramController {
         noInternet,
         macOnu,
         onuUnauth.epon_port,
-        onuUnauth.onu_id
+        onuUnauth.onu_id,
+        pelanggan.nama
       );
 
       if (!success) {

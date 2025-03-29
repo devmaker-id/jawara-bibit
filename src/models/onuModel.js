@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const TelnetClient = require("../utils/telnetClient");
 
 class OnuModels {
   static async getAll() {
@@ -109,25 +110,52 @@ class OnuModels {
     }
   }
 
-  static async updateOnuWithAuth(noInternet, mac_onu, epon_port, onu_id) {
+  static async updateOnuWithAuth(
+    noInternet,
+    mac_onu,
+    epon_port,
+    onu_id,
+    namePelanggan
+  ) {
+    let olt;
     try {
       // Update tbl_onu dengan MAC, Port, dan ONU ID berdasarkan nomor internet
       const [result] = await db.execute(
         "UPDATE tbl_onu SET onu_mac = ?, epon_port = ?, onu_id = ?, status = ?, updated_at = NOW() WHERE no_internet = ?",
-        [mac_onu, epon_port, onu_id, 'active', noInternet]
+        [mac_onu, epon_port, onu_id, "active", noInternet]
       );
 
-      if (result.affectedRows > 0) {
-        // Hapus dari tb_onu_unauth karena sudah terautentikasi
-        await db.execute("DELETE FROM tb_onu_unauth WHERE mac_onu = ?", [
-          mac_onu,
-        ]);
-        return true;
+      if (result.affectedRows === 0) {
+        console.log("⚠️ Tidak ada ONU yang diperbarui. Proses dihentikan.");
+        return false;
       }
-      return false;
+
+      olt = new TelnetClient();
+      await olt.connect();
+      await olt.sendCommand("enable");
+      await olt.sendCommand("configure terminal");
+      await olt.sendCommand(`interface epon ${epon_port}`);
+      await olt.sendCommand(
+        `onu ${onu_id} name ${namePelanggan.replace(/ /g, "_")}`
+      );
+      await olt.sendCommand("exit");
+      await olt.sendCommand("exit");
+
+      //save configurasi olt
+      olt.saveConfigOlt();
+
+      // Hapus dari tb_onu_unauth karena sudah terautentikasi
+      await db.execute("DELETE FROM tb_onu_unauth WHERE mac_onu = ?", [
+        mac_onu,
+      ]);
+      return true;
     } catch (error) {
       console.error("❌ ERROR saat mengupdate ONU:", error);
       throw error;
+    } finally {
+      if (olt) {
+        olt.disconnect();
+      }
     }
   }
 

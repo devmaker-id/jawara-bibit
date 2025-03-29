@@ -90,7 +90,7 @@ class TelnetClient {
 
     this.isCommandRunning = true;
     const { command, callback } = this.commandQueue.shift();
-    console.log(`<- Mengirim perintah: ${command}`);
+    console.log(`<- Write Command: ${command}`);
     this.socket.write(command + "\r\n");
 
     this.responseCallback = callback;
@@ -117,9 +117,8 @@ class TelnetClient {
 
     for (let line of lines) {
       if (line.endsWith("network:")) {
-        // Set current section (Outband/Inband)
         currentSection = line.replace(" network:", "").toLowerCase();
-        data[currentSection] = {}; // Buat objek untuk bagian ini
+        data[currentSection] = {};
       } else {
         let match = line.match(/^(.+?)\s+:\s+(.+)$/);
         if (match && currentSection) {
@@ -173,6 +172,14 @@ class TelnetClient {
       txpower: opticalData.txpower,
       rxpower: opticalData.rxpower,
     };
+  }
+
+  saveConfigOlt() {
+    this.sendCommand("enable");
+    this.sendCommand("write");
+    setTimeout(() => {
+      this.sendCommand("exit");
+    }, 5000); // waktu tunggu olt save config 3-5 detik saya set di 5 detik
   }
 
   disconnect() {

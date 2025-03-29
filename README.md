@@ -246,13 +246,16 @@ jawara-bibit@root# nano /etc/rsyslog.d/olt.conf
 #192.168.1.254 -> ip olt kalian
 module(load="omprog")   # Pastikan omprog dimuat
 
-if $fromhost-ip == '192.168.1.254' then {
+if $fromhost-ip == '192.168.1.254' and ($msg contains 'linkup' or $msg contains 'linkdown') then {
     action(
         type="omprog"
         binary="/home/olt/send_log.sh"
     )
 }
 #sampai sini
+
+$fromhost-ip == '192.168.1.254' -> filter untuk log dari ip olt saja
+and ($msg contains 'linkup' or $msg contains 'linkdown') -> filter untuk menemukan log linkup|linkdown
 
 ctrl + x
 jawara-bibit@root# systemctl restart rsyslog
