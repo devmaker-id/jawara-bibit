@@ -202,7 +202,7 @@ class TelegramController {
         }
       );
 
-      if (!response.data.success || !response.data.data) {
+      if (!response.data?.success || !response.data?.data) {
         return TelegramBot.sendMessage(
           chatId,
           `⚠️ Data tidak ditemukan untuk nomor internet ${inet}.`
@@ -224,7 +224,7 @@ class TelegramController {
         optical_info,
       } = onu.data;
 
-      if (response.data.no_auth) {
+      if (response.data?.no_auth) {
         let msgNoAuth = `⚠️ ONU BELUM DI AUTHENTIKASI !!!\n`;
         msgNoAuth += `===================\n`;
         msgNoAuth += `📢 *Informasi Pelanggan* \n`;

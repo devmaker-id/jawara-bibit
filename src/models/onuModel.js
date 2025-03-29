@@ -113,8 +113,8 @@ class OnuModels {
     try {
       // Update tbl_onu dengan MAC, Port, dan ONU ID berdasarkan nomor internet
       const [result] = await db.execute(
-        "UPDATE tbl_onu SET onu_mac = ?, epon_port = ?, onu_id = ?, updated_at = NOW() WHERE no_internet = ?",
-        [mac_onu, epon_port, onu_id, noInternet]
+        "UPDATE tbl_onu SET onu_mac = ?, epon_port = ?, onu_id = ?, status = ?, updated_at = NOW() WHERE no_internet = ?",
+        [mac_onu, epon_port, onu_id, 'active', noInternet]
       );
 
       if (result.affectedRows > 0) {
