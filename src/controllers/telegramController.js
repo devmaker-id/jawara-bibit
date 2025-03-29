@@ -549,7 +549,7 @@ class TelegramController {
       }
 
       // Update tbl_onu dengan MAC, epon_port, dan onu_id
-      const success = await OnuModel.updateOnuWithAuth(
+      const success = await OnuModels.updateOnuWithAuth(
         noInternet,
         macOnu,
         onuUnauth.epon_port,
