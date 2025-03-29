@@ -3,6 +3,7 @@
 Jawara Bibit adalah aplikasi berbasis Node.js yang digunakan untuk mengelola data ONU dan melakukan pengecekan status ONU melalui OLT. Aplikasi ini menggunakan database MariaDB dan memiliki sistem autentikasi berbasis API Key.
 
 ## bahan pendukung
+
 ```
 1. termux         -> buat jalankan nodjs
 2. api client     -> app android, rest api
@@ -53,6 +54,7 @@ jika anda kecocokan dalam OLT yang digunakan, jangan ragukan lagi, app ini pasti
 ## aksess awal default
 
 untuk aksess api key default
+
 ```
 username  : admin
 password  : admin123
@@ -60,22 +62,28 @@ api_key   : d643b321fe51c359d6b1d045407a2de2916d1c9db0f0c2c8f43c59d5c0b1558a
 ```
 
 ## url /auth (jalankan saat debug saja)
+
 ```
 /register -> buat akun serta api-key
 /login    -> cek login -> butuh x-api-key
 /me       -> lihat profile -> butuh x-api-key
 ```
+
 ## url /api/onu
+
 ```
 /           -> melihat semua onu -> jangan di live
 /get-onu    -> lihat onu dengan nomor internet -> butuh x-api-key
 /reboot-onu -> reboot onu dengan nomor internet -> butuh x-api-key
 ```
+
 ## url /api/olt
+
 ```
 /int-network  -> lihat ip network -> butuh x-api-key
 /system-info  -> lihst system info -> butuh x-api-key
 ```
+
 ## Instalasi
 
 Pastikan Anda memiliki Node.js dan MariaDB terinstal. Kemudian ikuti langkah-langkah berikut:
@@ -137,12 +145,14 @@ CREATE TABLE `tbl_users` (
 ```
 
 ## update 26 Maret 2025
+
 - configurasi .env update
 - menambah axios module
 - menambah telegram bot
 - format tanggal waktu
 
 ## env.example -> .env
+
 ```
 #set time zone
 TZ=Asia/Jakarta
@@ -166,7 +176,9 @@ TELEGRAM_BOT_TOKEN=
 DOMAIN=https://0653-140-213-30-156.ngrok-free.app
 
 ```
+
 ## folder map
+
 ```
 jawara-bibit
 |-src/
@@ -174,7 +186,9 @@ jawara-bibit
 | | |-> telegramBot.js
 | | |-> dateHelper.js
 ```
+
 ## url /api/telegram
+
 ```
 /webhook        -> handler webhook
 /set-webhook    -> POST   -> [url_web] butuh x-api-key
@@ -183,6 +197,7 @@ jawara-bibit
 ```
 
 ## UPDATE 28/03/2025
+
 ```
 1. Memperbaiki dialog pendaftaran
 perintah telegram /daftar
@@ -194,3 +209,89 @@ c. /daftar              -> masuk dialog daftar
 d. /batal               -> batalkan pendaftaran
 kasus ini masih jauh dari sempurna
 ```
+
+## update 29/03/2025
+
+```
+menambah route baru untuk keperluan baca log dari olt
+/api/olt/log      -> POST method, relatip saat ini ga pake apiKey
+
+```
+
+## masuk ke rsyslog
+
+ini untuk menangkap log dari olt, untuk kepentingan singkronisasi ONU
+buat file bash, saya akan gunakan curl aja, dan diterima oleh nodjs kembali dengan post
+
+```
+buat file baru di server linux
+jawara-bibit@root# nano nodejs_log.sh
+
+#!/bin/bash
+
+# Baca log dari rsyslog (STDIN)
+while read log; do
+    curl -X POST "http://localhost:5000/api/olt/log" \
+        -H "Content-Type: application/json" \
+        -d "{\"log\": \"$log\"}"
+done
+
+ctrl + x
+jawara-bibit@root# chmod +x nodejs_log.sh
+
+buat file baru di /etc/rsyslog.d/(disini).conf
+jawara-bibit@root# nano /etc/rsyslog.d/olt.conf
+#dari sini
+#192.168.1.254 -> ip olt kalian
+module(load="omprog")   # Pastikan omprog dimuat
+
+if $fromhost-ip == '192.168.1.254' then {
+    action(
+        type="omprog"
+        binary="/home/olt/send_log.sh"
+    )
+}
+#sampai sini
+
+ctrl + x
+jawara-bibit@root# systemctl restart rsyslog
+jawara-bibit@root# systemctl status rsyslog
+
+```
+
+## buat table baru di database tb_onu_unauth
+
+ini untuk menyimpan onu yang baru dengan nama = NA, untuk kemudian di auth dengan nomor internet, kami sebut aktifasi
+
+```
+CREATE TABLE tb_onu_unauth (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) DEFAULT 'NA',
+    mac_onu VARCHAR(17) NOT NULL UNIQUE,
+    epon_port VARCHAR(50) NOT NULL,
+    onu_id VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+```
+
+## memperbaiki perintah /auth
+
+memperbaiki perintah /auth telgram untuk aktifasi onu baru dengan pelanggan baru
+
+```
+perintah lama
+/auth <mac_onu> <pon_port>
+
+perintah update
+/auth <mac_onu> <no_internet>
+
+topologinya,
+1. pendaftaran pelanggan dengan perintah /daftar. salin nomor internet
+2. hubungkan onu ke olt, sampai terdeteksi mac nya akan tampil.
+3. gunakan perintah di atas, untuk menghubungnkan onu dan data pelanggan
+
+4. jiak anda mencari /i <no_internet> akan menampilkan detail onu dan info pelanggan
+```
+
+#minal aidzin walfaidzin mohon maaf lahir dan batin 30 Maret 2025

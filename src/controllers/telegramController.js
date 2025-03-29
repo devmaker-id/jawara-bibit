@@ -11,7 +11,6 @@ class TelegramController {
     try {
       const update = req.body;
       //console.log("Update:", update);
-
       if (update.message) {
         const chatId = update.message.chat.id;
 
@@ -59,11 +58,12 @@ class TelegramController {
           "❌ Masukkan nomor internet. \nContoh: `/i 971000213`."
         );
       }
-    } else if (command === "/info") {
-      let userInfo = `👤 Info Id Telegram\n`;
-      userInfo += `ID Chat: ${chatId}`;
+    } else if (command === "/start") {
+      let msgTes = `👤 Hai saya JAWARA BIBIT\n`;
+      msgTes += `ID Chat: ${chatId}\n\n`;
+      msgTes += `by https://github.com/devmaker-id/jawara-bibit`;
 
-      await TelegramBot.sendMessage(chatId, userInfo);
+      await TelegramBot.sendMessage(chatId, msgTes);
     } else if (command === "/paket") {
       return await TelegramController.infoPaketWifi(chatId);
     } else if (command === "/daftar") {
@@ -71,33 +71,28 @@ class TelegramController {
     } else if (command === "/batal") {
       return await TelegramController.cancelRegistration(chatId);
     } else if (command === "/auth") {
-      if (commandParts.length > 1) {
-        const nomorInternet = commandParts[1];
-        if (/^\d+$/.test(nomorInternet)) {
-          let msgAuth = `Tunggu Sedang\n`;
-          msgAuth += `Prosess aktifasi ${nomorInternet} ...\n\n`;
-          msgAuth += `👤 Pastikan onu sudah online di olt`;
-          await TelegramBot.sendMessage(chatId, msgAuth);
-        } else {
-          await TelegramBot.sendMessage(
-            chatId,
-            "❌ Format salah. Gunakan\n`/auth <nomor_internet>`. \nContoh: `/auth 971000213`."
-          );
-        }
+      if (commandParts.length > 2) {
+        const macOnu = commandParts[1].toUpperCase();
+        const noInternet = commandParts[2];
+        return await TelegramController.authOnuRouter(
+          chatId,
+          macOnu,
+          noInternet
+        );
       } else {
         await TelegramBot.sendMessage(
           chatId,
-          "❌ Aktifasi Modem. \nContoh: `/auth 971000213`."
+          "❌ Perintah tidak lengkap.\nGunakan `/auth <MAC_ONU> <NO_INTERNET>`.\n\nContoh: `/auth 70:2E:22:2B:87:F3 971000213`."
         );
       }
     } else if (activeRegistrations[chatId]) {
       return await TelegramController.handleRegistrationStep(chatId, text);
     } else {
       let chatListComm = "Bot Jawara Bibit. \n";
-      chatListComm += "`/info` -> info id telegram\n";
+      chatListComm += "`/start` -> wilujeng sumping\n";
       chatListComm += "`/paket` -> list paket wifi\n";
       chatListComm += "`/i <nomor_internet>` -> cek onu pelanggan\n";
-      chatListComm += "`/auth <nomor_internet>` -> aktifasi router\n";
+      chatListComm += `\`/auth <MAC_ONU> <EPON_PORT:ONU_ID>\` -> aktifasi router\n`;
       chatListComm += "`/daftar` -> pendaftaran pelanggan\n";
       chatListComm += "`/batal` -> Batal Daftar\n\n";
       chatListComm += "sys Jawara Bibit";
@@ -488,7 +483,9 @@ class TelegramController {
         message += `*Alamat:* ${dataBaru.alamat_lengkap}\n`;
         message += `*Google map:* ${dataBaru.lokasi}\n\n`;
         message += `Terima kasih telah mendaftar! 🎉\n`;
-        message += `Segera lakukan aktifasi router`;
+        message += `Segera lakukan aktifasi router\n\n`;
+        message += `Sambungkan ONU sampai lampu LOS/merah hilang\n`;
+        message += `Cek kembali di sini ada ONU baru apa tidak`;
 
         await TelegramBot.sendMessage(chatId, message);
       } else {
@@ -528,6 +525,54 @@ class TelegramController {
       await TelegramBot.sendMessage(chatId, paketList);
     } else {
       await TelegramBot.sendMessage(chatId, "❌ List paket kosong");
+    }
+  }
+
+  static async authOnuRouter(chatId, macOnu, noInternet) {
+    try {
+      // Cek apakah nomor internet ada di tbl_onu
+      const pelanggan = await OnuModels.getByNoInternet(noInternet);
+      if (!pelanggan) {
+        return await TelegramBot.sendMessage(
+          chatId,
+          "❌ Nomor internet tidak ditemukan di database!"
+        );
+      }
+
+      // Cek apakah MAC ONU ada di tb_onu_unauth
+      const onuUnauth = await OnuModels.findOnuByMac(macOnu);
+      if (!onuUnauth) {
+        return await TelegramBot.sendMessage(
+          chatId,
+          "❌ ONU dengan MAC ini belum terdeteksi di OLT!"
+        );
+      }
+
+      // Update tbl_onu dengan MAC, epon_port, dan onu_id
+      const success = await OnuModel.updateOnuWithAuth(
+        noInternet,
+        macOnu,
+        onuUnauth.epon_port,
+        onuUnauth.onu_id
+      );
+
+      if (!success) {
+        return await TelegramBot.sendMessage(
+          chatId,
+          "❌ Gagal memperbarui data ONU!"
+        );
+      }
+
+      return await TelegramBot.sendMessage(
+        chatId,
+        `✅ ONU berhasil diaktifkan untuk pelanggan *${pelanggan.nama}* (No. Internet: ${noInternet}).`
+      );
+    } catch (error) {
+      console.error("❌ ERROR:", error);
+      return await TelegramBot.sendMessage(
+        chatId,
+        "❌ Terjadi kesalahan pada server!"
+      );
     }
   }
 }
