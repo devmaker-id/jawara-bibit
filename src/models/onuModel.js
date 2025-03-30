@@ -126,7 +126,6 @@ class OnuModels {
       );
 
       if (result.affectedRows === 0) {
-        console.log("⚠️ Tidak ada ONU yang diperbarui. Proses dihentikan.");
         return false;
       }
 
@@ -150,7 +149,6 @@ class OnuModels {
       ]);
       return true;
     } catch (error) {
-      console.error("❌ ERROR saat mengupdate ONU:", error);
       throw error;
     } finally {
       if (olt) {
@@ -171,12 +169,8 @@ class OnuModels {
           "INSERT INTO tb_onu_unauth (mac_onu, epon_port, onu_id, created_at) VALUES (?, ?, ?, NOW())",
           [mac_onu, epon_port, onu_id]
         );
-        console.log(`✅ ONU baru disimpan ke tb_onu_unauth: ${mac_onu}`);
-      } else {
-        console.log(`⚠️ ONU sudah ada di tb_onu_unauth: ${mac_onu}`);
       }
     } catch (error) {
-      console.error("❌ ERROR saat menyimpan ONU baru:", error);
       throw error;
     }
   }

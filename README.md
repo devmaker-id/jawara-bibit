@@ -11,6 +11,62 @@ Jawara Bibit adalah aplikasi berbasis Node.js yang digunakan untuk mengelola dat
 4. ngrok          -> run in termux, debug tele
 ```
 
+## form update
+
+`disini...`
+
+## update 30 Maret 2025
+
+```
+saya membuat input default database berikut dengan table dan seednya
+anda tinggal jalankan (node app)
+
+jadi ketika pertama kali anda menjalankan aplikasi ini, saya sarankan buat .env dahulu
+karna itu file utama kita, bisa menjalankan aplikasi dengan normal.
+lihat rujukan -> update 26 Maret 2025
+dan juga kita juga harus seudah memiliki database yang sudah disiapkan
+lihat rujukan -> Panduan Pembuatan Database
+
+src/database/initDb.js
+==========================
+jika baru pertama memulai akan seperti ini
+
+$ node app
+� Mengecek dan mencocokkan tabel di database...
+✅ Tabel 'tbl_onu' berhasil dibuat.
+✅ Tabel 'tbl_paket' berhasil dibuat.
+✅ Data awal ditambahkan ke 'tbl_paket'.
+✅ Tabel 'tbl_users' berhasil dibuat.
+✅ Admin default ditambahkan ke 'tbl_users'.
+✅ Tabel 'tb_onu_unauth' berhasil dibuat.
+� Inisialisasi database selesai!
+
+✅ Database siap!
+Timezone sekarang: 30/3/2025, 07.43.15
+Server berjalan di http://localhost:3000
+
+============================================
+
+dan jika sudah memiliki databsae output di terminal akan seperti ini
+
+$ node app
+� Mengecek dan mencocokkan tabel di database...
+✅ Tabel 'tbl_onu' sudah ada.
+✅ Tabel 'tbl_paket' sudah ada.
+✅ Data 'tbl_paket' sudah ada, tidak perlu ditambahkan.
+✅ Tabel 'tbl_users' sudah ada.
+✅ Admin 'tbl_users' sudah ada, tidak perlu ditambahkan.
+✅ Tabel 'tb_onu_unauth' sudah ada.
+� Inisialisasi database selesai!
+
+✅ Database siap!
+Timezone sekarang: 30/3/2025, 07.42.12
+Server berjalan di http://localhost:3000
+
+```
+
+## =============
+
 ## Fitur
 
 - **Manajemen Data ONU**: Menyimpan informasi ONU, termasuk nomor internet, lokasi, EPON port, dan statusnya.
@@ -154,17 +210,17 @@ CREATE TABLE `tbl_users` (
 ## env.example -> .env
 
 ```
-#set time zone
+# set time zone
 TZ=Asia/Jakarta
 
-#database
+# database
 DB_HOST=
 DB_USER=
 DB_PASS=
 DB_NAME=db_isp
 DB_PORT=3306
 
-#telnet
+# telnet
 OLT_HOST=
 OLT_PORT=23
 OLT_USER=
@@ -172,8 +228,9 @@ OLT_PASS=
 OLT_ENCOD=ascii
 
 # Telegram Bot Data
-TELEGRAM_BOT_TOKEN=
-DOMAIN=https://0653-140-213-30-156.ngrok-free.app
+TELEGRAM_BOT_TOKEN=tokenmu
+CHAT_ID_ADMIN=
+CHAT_ID_GROUP=
 
 ```
 
@@ -298,4 +355,6 @@ topologinya,
 4. jiak anda mencari /i <no_internet> akan menampilkan detail onu dan info pelanggan
 ```
 
-#minal aidzin walfaidzin mohon maaf lahir dan batin 30 Maret 2025
+## minal aidzin walfaidzin mohon maaf lahir dan batin 30 Maret 2025
+
+## kembali ke atas

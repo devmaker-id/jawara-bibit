@@ -64,8 +64,6 @@ class OltController {
           status: match[4],
         };
 
-        //console.log("DATA ONU: \n", parsedLog);
-
         if (parsedLog.name === "NA" && parsedLog.status === "linkup") {
           const registeredOnu = await OnuModel.findOnuByMac(parsedLog.mac_onu);
 
@@ -95,10 +93,8 @@ class OltController {
           data: parsedLog,
         });
       }
-      console.log("❌ LOG FORMAT TIDAK DIKENALI:", logData);
       return res.status(422).json({ message: "Log format tidak dikenali" });
     } catch (error) {
-      console.error("❌ ERROR:", error);
       return res.status(500).json({ message: "Server error" });
     }
   }
