@@ -18,7 +18,7 @@ app.use("/api/onu", onuRoutes);
 
 app.use("/auth", userRoutes);
 
-app.listen(3000, () => {
+app.listen(3000, '0.0.0.0', () => {
   console.log(
     "Timezone sekarang:",
     new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
