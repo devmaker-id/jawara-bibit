@@ -67,6 +67,19 @@ class OnuModels {
       throw error;
     }
   }
+  
+  static async findOnuByMacRegis(mac_onu) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM tbl_onu WHERE mac_onu = ?",
+        [mac_onu]
+      );
+      return rows[0] || null;
+    } catch (error) {
+      console.error("❌ ERROR saat mencari ONU berdasarkan MAC:", error);
+      throw error;
+    }
+  }
 
   static async findOnuByMac(mac_onu) {
     try {
