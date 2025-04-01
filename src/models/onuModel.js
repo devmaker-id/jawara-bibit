@@ -107,7 +107,7 @@ class OnuModels {
   static async findOnuByMacRegis(mac_onu) {
     try {
       const [rows] = await db.execute(
-        "SELECT * FROM tbl_onu WHERE mac_onu = ?",
+        "SELECT * FROM tbl_onu WHERE onu_mac = ?",
         [mac_onu]
       );
       return rows[0] || null;

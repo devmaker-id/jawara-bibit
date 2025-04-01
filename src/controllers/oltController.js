@@ -71,7 +71,7 @@ class OltController {
       };
   
       // Cek apakah ONU sudah terdaftar
-      const registeredOnu = await OnuModel.findOnuByMac(parsedLog.mac_onu);
+      const registeredOnu = await OnuModel.findOnuByMacRegis(parsedLog.mac_onu);
       const teleId = process.env.CHAT_ID_GROUP;
   
       if (registeredOnu) {
