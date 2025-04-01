@@ -61,11 +61,13 @@ class TelegramController {
     } else if (command === "/start") {
       let msgTes = `👤 Hai saya JAWARA BIBIT\n`;
       msgTes += `ID Chat: ${chatId}\n\n`;
-      msgTes += `by https://github.com/devmaker-id/jawara-bibit`;
+      msgTes += `by Ruyuk Kiray`;
 
       await TelegramBot.sendMessage(chatId, msgTes);
     } else if (command === "/paket") {
       return await TelegramController.infoPaketWifi(chatId);
+    } else if (command === "/onu-offline") {
+      return await TelegramController.onuOffline(chatId);
     } else if (command === "/daftar") {
       return await TelegramController.startRegistration(chatId);
     } else if (command === "/batal") {
@@ -92,6 +94,7 @@ class TelegramController {
       chatListComm += "`/start` -> wilujeng sumping\n";
       chatListComm += "`/paket` -> list paket wifi\n";
       chatListComm += "`/i <nomor_internet>` -> cek onu pelanggan\n";
+      chatListComm += "`/onu-offline` -> cek onu offline\n";
       chatListComm += `\`/auth <MAC_ONU> <EPON_PORT:ONU_ID>\` -> aktifasi router\n`;
       chatListComm += "`/daftar` -> pendaftaran pelanggan\n";
       chatListComm += "`/batal` -> Batal Daftar\n\n";
@@ -576,6 +579,28 @@ class TelegramController {
       );
     }
   }
+  
+  static async onuOffline(chatId) {
+    try {
+      const onuData = await OnuModels.getStatusOptic('linkdown');
+        
+      if (onuData && onuData.length > 0) {
+        let onuList = "🚨 *Router Offline* 🚨\n\n";
+        onuData.forEach((onu, index) => {
+            onuList += `${index + 1}. *${onu.nama}* - \`${onu.no_internet}\`\n`;
+        });
+
+        await TelegramBot.sendMessage(chatId, onuList);
+      } else {
+        await TelegramBot.sendMessage(chatId, "✅ Tidak ada router yang offline.");
+      }
+    } catch (error) {
+      console.error("Error saat mengambil data ONUs:", error);
+      await TelegramBot.sendMessage(chatId, "⚠️ Terjadi kesalahan saat mengambil data ONUs.");
+    }
+  }
+
+  
 }
 
 module.exports = TelegramController;

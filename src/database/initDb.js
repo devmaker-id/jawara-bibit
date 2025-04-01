@@ -20,6 +20,7 @@ async function initDatabase() {
                     no_internet VARCHAR(50) NOT NULL,
                     nama VARCHAR(255) NOT NULL,
                     lokasi VARCHAR(255) NOT NULL,
+                    optic_status ENUM('linkup','linkdown') NOT NULL DEFAULT 'linkup',
                     epon_port VARCHAR(10) NOT NULL,
                     onu_id INT(11) NOT NULL,
                     onu_mac VARCHAR(20) NOT NULL,
@@ -62,7 +63,8 @@ async function initDatabase() {
                 ('lite internet only', '5 Mbps', 175000, '2 - 4 Perangkat'),
                 ('silver internet only', '10 Mbps', 220000, '4 - 8 Perangkat'),
                 ('gold internet only', '30 Mbps', 350000, '10 - 20 Perangkat'),
-                ('platinum internet only', '50 Mbps', 450000, '20 - 30 Perangkat')
+                ('platinum internet only', '50 Mbps', 450000, '20 - 30 Perangkat'),
+                ('agen reseller', 'Agen', 0, 'Unlimited')
             `);
       console.log("✅ Data awal ditambahkan ke 'tbl_paket'.");
     } else {

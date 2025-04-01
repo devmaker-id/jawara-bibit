@@ -70,6 +70,8 @@ class OltController {
 
       if (registeredOnu) {
       // ONU terdaftar dan mengalami perubahan status (linkup atau linkdown)
+      await OnuModel.updateStatusOnu(parsedLog.mac_onu, parsedLog.status);
+      
         const statusEmoji = parsedLog.status === "linkup" ? "🟢 Online" : "🔴 Offline";
         const msg =
           `📡 *Perubahan Status ONU*\n\n` +

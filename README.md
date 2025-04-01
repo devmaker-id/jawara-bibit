@@ -15,6 +15,14 @@ Jawara Bibit adalah aplikasi berbasis Node.js yang digunakan untuk mengelola dat
 
 `disini...`
 
+## update 01 April 2025
+```
+menambah kolom optic_status di db_isp.tbl_onu
+menambah /auth registrasi full via telegram
+menambah pengecekan onu offline (linkdown)
+memperbaiki input notifikasi linkup dan linkdown
+memperbaiki database/initDb.js query dan pembuatan table
+```
 ## update 30 Maret 2025
 
 ```

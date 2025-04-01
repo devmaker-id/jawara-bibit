@@ -7,7 +7,7 @@ class OnuModels {
       const [rows] = await db.execute("SELECT * FROM tbl_onu");
       return rows;
     } catch (error) {
-      console.error("Error ambil data:", error);
+      //console.error("Error ambil data:", error);
       throw error;
     }
   }
@@ -20,7 +20,7 @@ class OnuModels {
       );
       return rows[0] || null;
     } catch (error) {
-      console.error("Error saat menambah ONU:", error);
+      //console.error("Error saat menambah ONU:", error);
       throw error;
     }
   }
@@ -32,7 +32,7 @@ class OnuModels {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `;
 
-    console.log("MODEL :\n", data);
+    //console.log("MODEL :\n", data);
 
     try {
       const [result] = await db.execute(sql, [
@@ -48,10 +48,10 @@ class OnuModels {
         data.paket,
         data.alamat_lengkap,
       ]);
-      console.log("INPUT DB:\n", result);
+      //console.log("INPUT DB:\n", result);
       return result;
     } catch (error) {
-      console.error("Error saat menambah ONU:", error);
+      //console.error("Error saat menambah ONU:", error);
       throw error;
     }
   }
@@ -63,7 +63,34 @@ class OnuModels {
       );
       return rows.length ? rows : null;
     } catch (error) {
-      console.error("❌ ERROR saat mencari ONU belum terautentikasi:", error);
+      //console.error("❌ ERROR saat mencari ONU belum terautentikasi:", error);
+      throw error;
+    }
+  }
+ 
+  static async getStatusOptic(status) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM tbl_onu WHERE optic_status = ?", [status]
+      );
+      return rows.length ? rows : null;
+    } catch (error) {
+      throw error;
+    }
+  }
+ 
+ static async updateStatusOnu(mac_onu, status) {
+    try {
+      const [result] = await db.execute(
+        "UPDATE tbl_onu SET  optic_status = ?, WHERE onu_mac = ?",
+        [status, mac_onu]
+      );
+
+      if (result.affectedRows === 0) {
+        return false;
+      }
+      return true;
+    } catch (error) {
       throw error;
     }
   }
