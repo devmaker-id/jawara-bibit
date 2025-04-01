@@ -79,7 +79,7 @@ class OnuModels {
     }
   }
  
- static async updateStatusOnu(mac_onu, status) {
+  static async updateStatusOnu(mac_onu, status) {
     try {
       // Pastikan status hanya berisi 'linkup' atau 'linkdown' jika diperlukan
       if (status !== 'linkup' && status !== 'linkdown') {
@@ -96,6 +96,7 @@ class OnuModels {
       if (result.affectedRows === 0) {
         return false;
       }
+      console.log(`UPDATE LINK : ${mac_onu} ${status}`);
       return true;
     } catch (error) {
       throw error;
