@@ -81,11 +81,18 @@ class OnuModels {
  
  static async updateStatusOnu(mac_onu, status) {
     try {
+      // Pastikan status hanya berisi 'linkup' atau 'linkdown' jika diperlukan
+      if (status !== 'linkup' && status !== 'linkdown') {
+        throw new Error('Invalid status value. Only "linkup" or "linkdown" are allowed.');
+      }
+  
+      // Query SQL dengan menghapus koma ekstra
       const [result] = await db.execute(
-        "UPDATE tbl_onu SET  optic_status = ?, WHERE onu_mac = ?",
+        "UPDATE tbl_onu SET optic_status = ? WHERE onu_mac = ?",
         [status, mac_onu]
       );
-
+  
+      // Cek apakah ada baris yang terpengaruh
       if (result.affectedRows === 0) {
         return false;
       }
@@ -94,6 +101,7 @@ class OnuModels {
       throw error;
     }
   }
+
   
   static async findOnuByMacRegis(mac_onu) {
     try {

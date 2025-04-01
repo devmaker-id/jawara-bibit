@@ -53,7 +53,7 @@ class OltController {
       const regex =/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] ONU (\d+\/\d+:\d+)\s+\[\s*([0-9A-F:]+)\s*\] \[(.*?)\] (linkup|linkdown)/;
       const match = logData.match(regex);
       
-      console.log(match);
+      //console.log(match);
 
       if (match) {
         const parsedLog = {
