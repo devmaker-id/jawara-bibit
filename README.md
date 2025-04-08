@@ -365,7 +365,7 @@ topologinya,
 
 ## minal aidzin walfaidzin mohon maaf lahir dan batin 30 Maret 2025
 
-##anda bingun sama, saya juga.
+## anda bingun sama, saya juga.
 ini bisa berubah sewaktu waktu, kodingan open source, silahkan kembangkan
 ```
 1. Basic Setup
