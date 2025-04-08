@@ -374,24 +374,19 @@ topologinya,
 ini bisa berubah sewaktu waktu.
 - kodingan open source.
 - silahkan kembangkan.
-- dijual kembali jasanya boleh, wkwkwkwkw
 
 ```
 1. Basic Setup
-Instalasi fisik dan setup dasar OLT:
-Rp300.000 – Rp500.000 (tergantung lokasi dan tipe OLT)
+Instalasi fisik dan setup dasar OLT
 
 2. Konfigurasi Telegram Bot + Skrip Monitoring
 Bikin bot, integrasi API Telegram, skrip untuk deteksi online/offline dan ONU baru
-Rp400.000 – Rp1.000.000 (tergantung kompleksitas dan jumlah OLT)
 
 3. Remote Access Configuration
 Setup VPN / port forwarding yang aman untuk akses OLT dari luar
-Rp300.000 – Rp700.000
 
 4. Training / Dokumentasi (opsional)
 Penjelasan cara pakai, dokumentasi, panduan
-Rp200.000 – Rp300.000
 ```
 
 ## kembali ke atas
