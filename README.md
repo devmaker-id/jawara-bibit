@@ -365,8 +365,17 @@ topologinya,
 
 ## minal aidzin walfaidzin mohon maaf lahir dan batin 30 Maret 2025
 
-## anda bingun sama, saya juga.
-ini bisa berubah sewaktu waktu, kodingan open source, silahkan kembangkan
+## anda bingun, !! sama saya juga.
+
+## Kontak
+
+📬 [Telegram](https://t.me/blackdragon028)
+
+ini bisa berubah sewaktu waktu.
+- kodingan open source.
+- silahkan kembangkan.
+- dijual kembali jasanya boleh (by _AKNET)
+
 ```
 1. Basic Setup
 Instalasi fisik dan setup dasar OLT:
