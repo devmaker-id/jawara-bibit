@@ -374,7 +374,7 @@ topologinya,
 ini bisa berubah sewaktu waktu.
 - kodingan open source.
 - silahkan kembangkan.
-- dijual kembali jasanya boleh (by _AKNET)
+- dijual kembali jasanya boleh, wkwkwkwkw
 
 ```
 1. Basic Setup
